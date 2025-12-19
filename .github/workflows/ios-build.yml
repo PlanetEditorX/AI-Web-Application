@@ -1,7 +1,7 @@
 name: Build for TrollStore
 on:
   push:
-    branches: [main] # 如果你的分支叫 master，请修改此处
+    branches: [main]
 
 jobs:
   build:
@@ -12,16 +12,19 @@ jobs:
       - name: Install Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
 
       - name: Install Dependencies
-        run: npm install
+        run: |
+          npm install
+          npm install @capacitor/cli @capacitor/core @capacitor/ios
 
       - name: Build Web Project
         run: npm run build
 
       - name: Setup iOS Project
         run: |
+          npx cap init "GeminiClient" "com.gemini.chat" --web-dir dist
           npx cap add ios
           npx cap copy ios
 
@@ -38,7 +41,6 @@ jobs:
                      CODE_SIGN_ENTITLEMENTS="" \
                      CODE_SIGNING_METHOD=manual
 
-          # 创建符合巨魔安装要求的 IPA 结构
           mkdir -p Payload
           cp -r build/Build/Products/Release-iphoneos/App.app Payload/
           zip -r ../../Gemini_TrollStore.ipa Payload
