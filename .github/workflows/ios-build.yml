@@ -3,6 +3,10 @@ on:
   push:
     branches: [main]
 
+# 允许脚本创建 Release
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: macos-latest
@@ -50,8 +54,17 @@ jobs:
           # 3. 压缩成 IPA
           zip -r ../../Gemini_TrollStore.ipa Payload
 
-      - name: Upload IPA
-        uses: actions/upload-artifact@v4
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
         with:
-          name: Gemini-IPA
-          path: Gemini_TrollStore.ipa
+          files: Gemini_TrollStore.ipa
+          tag_name: v${{ github.run_number }}
+          name: Release v${{ github.run_number }}
+          body: |
+            ### Gemini iOS 自动构建包
+            - 构建编号: ${{ github.run_number }}
+            - 提交信息: ${{ github.event.head_commit.message }}
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
