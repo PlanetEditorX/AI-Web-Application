@@ -31,7 +31,8 @@ jobs:
       - name: Compile IPA (No Signing)
         run: |
           cd ios/App
-          xcodebuild -workspace App.xcworkspace \
+          # 1. 编译项目，注意这里改成了 -project App.xcodeproj
+          xcodebuild -project App.xcodeproj \
                      -scheme App \
                      -configuration Release \
                      -sdk iphoneos \
@@ -41,8 +42,12 @@ jobs:
                      CODE_SIGN_ENTITLEMENTS="" \
                      CODE_SIGNING_METHOD=manual
 
+          # 2. 检查编译出的 .app 路径并打包
+          # 新版 Xcode 的路径可能在 build/Build/Products/Release-iphoneos/ 下
           mkdir -p Payload
           cp -r build/Build/Products/Release-iphoneos/App.app Payload/
+
+          # 3. 压缩成 IPA
           zip -r ../../Gemini_TrollStore.ipa Payload
 
       - name: Upload IPA
