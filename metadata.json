@@ -1,0 +1,9 @@
+
+{
+  "name": "Gemini iOS Client",
+  "description": "A high-performance, iOS-styled web application for interacting with Google's Gemini AI models, designed for a native-like experience on mobile devices.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
