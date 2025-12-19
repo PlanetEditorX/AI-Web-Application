@@ -1,32 +1,35 @@
-name: "Build for TrollStore"
-
+name: Build for TrollStore
 on:
   push:
-    branches: [ "main" ]
+    branches: [main] # 如果你的分支叫 master，请修改此处
 
 jobs:
   build:
     runs-on: macos-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Set up Node/Bun
+      - name: Install Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
 
       - name: Install Dependencies
-        run: |
-          npm install
-          cd ios && pod install && cd ..
+        run: npm install
 
-      - name: Build Framework-less IPA (Pseudo-sign)
+      - name: Build Web Project
+        run: npm run build
+
+      - name: Setup iOS Project
         run: |
-          # 1. 编译生成 .app 文件夹
-          # CODE_SIGNING_ALLOWED=NO 强制跳过签名检查
-          xcodebuild -workspace ios/GeminiClient.xcworkspace \
-                     -scheme GeminiClient \
+          npx cap add ios
+          npx cap copy ios
+
+      - name: Compile IPA (No Signing)
+        run: |
+          cd ios/App
+          xcodebuild -workspace App.xcworkspace \
+                     -scheme App \
                      -configuration Release \
                      -sdk iphoneos \
                      -derivedDataPath build \
@@ -35,15 +38,13 @@ jobs:
                      CODE_SIGN_ENTITLEMENTS="" \
                      CODE_SIGNING_METHOD=manual
 
-          # 2. 手动构建 IPA 结构
+          # 创建符合巨魔安装要求的 IPA 结构
           mkdir -p Payload
-          cp -r build/Build/Products/Release-iphoneos/GeminiClient.app Payload/
+          cp -r build/Build/Products/Release-iphoneos/App.app Payload/
+          zip -r ../../Gemini_TrollStore.ipa Payload
 
-          # 3. 压缩成 IPA
-          zip -r GeminiClient_TrollStore.ipa Payload
-
-      - name: Upload Artifact
+      - name: Upload IPA
         uses: actions/upload-artifact@v4
         with:
-          name: TrollStore-IPA
-          path: GeminiClient_TrollStore.ipa
+          name: Gemini-IPA
+          path: Gemini_TrollStore.ipa

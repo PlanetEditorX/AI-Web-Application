@@ -1,0 +1,6 @@
+{
+	"appId": "com.gemini.chat",
+	"appName": "GeminiClient",
+	"webDir": "dist",
+	"bundledWebRuntime": false
+}
